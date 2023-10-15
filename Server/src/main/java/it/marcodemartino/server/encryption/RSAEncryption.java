@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import javax.crypto.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.util.Arrays;
 
 public class RSAEncryption implements AsymmetricEncryption {
 
@@ -15,6 +16,8 @@ public class RSAEncryption implements AsymmetricEncryption {
     private KeyPairGenerator generator;
     private Cipher encryptCipher;
     private Cipher decryptCipher;
+    private Cipher signatureCipher;
+    private Cipher signatureCheckCipher;
 
     public RSAEncryption(int keySize) {
         try {
@@ -29,6 +32,8 @@ public class RSAEncryption implements AsymmetricEncryption {
         try {
             encryptCipher = Cipher.getInstance("RSA");
             decryptCipher = Cipher.getInstance("RSA");
+            signatureCipher = Cipher.getInstance("RSA");
+            signatureCheckCipher = Cipher.getInstance("RSA");
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             logger.fatal("Could not instantiate the cipher. Error message: {}", e.getMessage());
             System.exit(1);
@@ -44,6 +49,7 @@ public class RSAEncryption implements AsymmetricEncryption {
         try {
             encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
             decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+            signatureCipher.init(Cipher.ENCRYPT_MODE, privateKey);
         } catch (InvalidKeyException e) {
             logger.error("Could not init the cipher. Error message: {}", e.getMessage());
         }
@@ -76,7 +82,7 @@ public class RSAEncryption implements AsymmetricEncryption {
 
     @Override
     public String decryptToString(byte[] input) {
-        return new String(input, StandardCharsets.UTF_8);
+        return new String(decrypt(input), StandardCharsets.UTF_8);
     }
 
     @Override
@@ -89,14 +95,40 @@ public class RSAEncryption implements AsymmetricEncryption {
         return new byte[0];
     }
 
+    @Override
+    public byte[] signFromString(String input) {
+        return sign(input.getBytes(StandardCharsets.UTF_8));
+    }
+
 
     @Override
     public byte[] sign(byte[] input) {
-        return decrypt(input);
+        try {
+            return signatureCipher.doFinal(input);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            logger.error("There was an error while decrypting the input: {}. Error message: {} ", new String(input, StandardCharsets.UTF_8), e.getMessage());
+        }
+        return new byte[0];
+    }
+
+    @Override
+    public boolean checkSignatureFromString(byte[] toBeChecked, String shouldBe, PublicKey publicKey) {
+        return checkSignature(toBeChecked, shouldBe.getBytes(StandardCharsets.UTF_8), publicKey);
     }
 
     @Override
     public boolean checkSignature(byte[] toBeChecked, byte[] shouldBe, PublicKey publicKey) {
-        return false;
+        byte[] uncryptedBytes = new byte[0];
+        try {
+            signatureCheckCipher.init(Cipher.DECRYPT_MODE, publicKey);
+        } catch (InvalidKeyException e) {
+            logger.error("Could not init the cipher. Error message: {}", e.getMessage());
+        }
+        try {
+            uncryptedBytes = signatureCheckCipher.doFinal(toBeChecked);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            logger.error("There was an error while decrypting the input: {}. Error message: {} ", new String(toBeChecked, StandardCharsets.UTF_8), e.getMessage());
+        }
+        return Arrays.equals(uncryptedBytes, shouldBe);
     }
 }

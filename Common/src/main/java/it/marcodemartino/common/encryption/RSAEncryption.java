@@ -1,4 +1,4 @@
-package it.marcodemartino.server.encryption;
+package it.marcodemartino.common.encryption;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -1,4 +1,4 @@
-package it.marcodemartino.server.encryption;
+package it.marcodemartino.common.encryption;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;

@@ -1,8 +1,9 @@
-package it.marcodemartino.server.encryption;
+package it.marcodemartino.common.encryption;
 
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RSAEncryptionTest {
 

@@ -2,7 +2,7 @@ package it.marcodemartino.common.encryption;
 
 import java.security.PublicKey;
 
-public interface AsymmetricEncryption extends AsymmetricKeyConstructor{
+public interface AsymmetricEncryption extends AsymmetricKeyConstructor {
 
     byte[] encryptFromString(String input);
     byte[] encrypt(byte[] input);

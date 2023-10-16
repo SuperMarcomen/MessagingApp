@@ -1,20 +1,21 @@
 package it.marcodemartino.server;
 
 import it.marcodemartino.common.application.Application;
+import it.marcodemartino.common.dao.IUserDao;
+import it.marcodemartino.common.dao.UserDao;
 import it.marcodemartino.common.database.Database;
+import it.marcodemartino.common.database.UserDatabase;
 import it.marcodemartino.common.email.EmailProvider;
 import it.marcodemartino.common.email.GmailProvider;
 import it.marcodemartino.common.encryption.*;
-import it.marcodemartino.common.dao.IUserDao;
-import it.marcodemartino.common.dao.UserDao;
-import it.marcodemartino.common.database.UserDatabase;
 import it.marcodemartino.server.handler.ClientHandler;
 import it.marcodemartino.server.services.RegistrationService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.*;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.SocketException;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -57,10 +58,11 @@ public class SSLServer implements Server {
         enableSSLProtocols(serverSocket);
         logger.info("Started the SSL socket server on the IP: {}", serverSocket.getInetAddress());
 
-        AsymmetricKeyReader asymmetricKeyReader = new AsymmetricKeyFileReader();
-        KeyPair keyPair = asymmetricKeyReader.readKeyPair("public_key.der", "private_key.der");
-
         AsymmetricEncryption asymmetricEncryption = new RSAEncryption(2048);
+
+        AsymmetricKeyReader asymmetricKeyReader = new AsymmetricKeyFileReader();
+        KeyPair keyPair = asymmetricKeyReader.readKeyPair("public_key.pem", "private_key.pem");
+
         asymmetricEncryption.setKeys(keyPair);
 
         EmailProvider emailProvider = new GmailProvider("e2ee.messaging.app@gmail.com", emailPassword);
@@ -76,7 +78,7 @@ public class SSLServer implements Server {
             if (clientSocket == null) return;
 
             logger.info("Received a connection with IP: {}", clientSocket.getInetAddress());
-            Application clientHandler = new ClientHandler(clientSocket, registrationService);
+            Application clientHandler = new ClientHandler(clientSocket, asymmetricEncryption, registrationService);
             new Thread(clientHandler).start();
         }
     }

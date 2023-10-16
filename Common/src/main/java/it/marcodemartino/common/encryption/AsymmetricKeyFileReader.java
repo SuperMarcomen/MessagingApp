@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.*;
+import java.util.Base64;
 
 public class AsymmetricKeyFileReader implements AsymmetricKeyReader {
 
@@ -19,20 +20,18 @@ public class AsymmetricKeyFileReader implements AsymmetricKeyReader {
         }
     }
 
-    private static PublicKey getPublicKey(String publicName) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(publicName));
+    private PublicKey getPublicKey(String publicName) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] keyBytes = Base64.getDecoder().decode(Files.readAllBytes(Paths.get(publicName)));
 
-        X509EncodedKeySpec spec =
-                new X509EncodedKeySpec(keyBytes);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePublic(spec);
     }
 
-    private static PrivateKey getPrivateKey(String privateName) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] keyBytes = Files.readAllBytes(Paths.get(privateName));
+    private PrivateKey getPrivateKey(String privateName) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] keyBytes = Base64.getDecoder().decode(Files.readAllBytes(Paths.get(privateName)));
 
-        PKCS8EncodedKeySpec spec =
-                new PKCS8EncodedKeySpec(keyBytes);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return kf.generatePrivate(spec);
     }

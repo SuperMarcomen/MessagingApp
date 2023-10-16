@@ -13,7 +13,7 @@ public class RegisterEmailObject implements JSONObject {
 
     @Override
     public JSONMethods getMethod() {
-        return JSONMethods.REGISTER_EMAIL;
+        return method;
     }
 
     public String getUsername() {

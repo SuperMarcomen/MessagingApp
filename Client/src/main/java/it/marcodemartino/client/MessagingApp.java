@@ -6,6 +6,8 @@ import it.marcodemartino.client.inputs.ConsoleInputEmitter;
 import it.marcodemartino.client.socket.SSLSocketClient;
 import it.marcodemartino.common.application.Application;
 import it.marcodemartino.common.commands.UserCommandManager;
+import it.marcodemartino.common.database.Database;
+import it.marcodemartino.common.database.UserDatabase;
 import it.marcodemartino.common.io.emitters.InputEmitter;
 
 public class MessagingApp {
@@ -14,6 +16,8 @@ public class MessagingApp {
         Application application = new SSLSocketClient("127.0.0.1", 8443);
         Thread thread = new Thread(application);
         thread.start();
+
+        Database database = new UserDatabase();
 
         InputEmitter inputEmitter = new ConsoleInputEmitter();
         UserCommandManager commandManager = new UserCommandManager(new ConsoleErrorManager());

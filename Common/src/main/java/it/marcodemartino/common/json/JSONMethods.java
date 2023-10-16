@@ -2,7 +2,8 @@ package it.marcodemartino.common.json;
 
 public enum JSONMethods {
 
-    REGISTER_EMAIL(RegisterEmailObject.class);
+    REGISTER_EMAIL(RegisterEmailObject.class),
+    REGISTRATION_RESULT(RegistrationResultObject.class);
 
     private final Class<? extends JSONObject> jsonObject;
 

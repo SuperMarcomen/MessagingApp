@@ -6,7 +6,9 @@ import org.apache.logging.log4j.Logger;
 import javax.crypto.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 
 public class RSAEncryption implements AsymmetricEncryption {
 
@@ -46,6 +48,10 @@ public class RSAEncryption implements AsymmetricEncryption {
 
         publicKey = pair.getPublic();
         privateKey = pair.getPrivate();
+        initCipher();
+    }
+
+    private void initCipher() {
         try {
             encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
             decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -63,6 +69,33 @@ public class RSAEncryption implements AsymmetricEncryption {
     @Override
     public PrivateKey getPrivateKey() {
         return privateKey;
+    }
+
+    @Override
+    public void setKeys(KeyPair keyPair) {
+        publicKey = keyPair.getPublic();
+        privateKey = keyPair.getPrivate();
+        initCipher();
+    }
+
+    @Override
+    public PublicKey constructKeyFromString(String key) {
+        try {
+            byte[] byteKey = Base64.getDecoder().decode(key.getBytes());
+            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePublic(X509publicKey);
+        } catch(Exception e){
+            logger.fatal("There was an error reconstructing the key {} from string", key, e);
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String publicKeyToString(PublicKey publicKey) {
+        byte[] encodedKey = publicKey.getEncoded();
+        return Base64.getEncoder().encodeToString(encodedKey);
     }
 
     @Override

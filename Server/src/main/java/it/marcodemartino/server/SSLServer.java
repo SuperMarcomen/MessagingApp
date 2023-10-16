@@ -1,7 +1,15 @@
 package it.marcodemartino.server;
 
 import it.marcodemartino.common.application.Application;
+import it.marcodemartino.common.database.Database;
+import it.marcodemartino.common.email.EmailProvider;
+import it.marcodemartino.common.email.GmailProvider;
+import it.marcodemartino.common.encryption.*;
+import it.marcodemartino.common.dao.IUserDao;
+import it.marcodemartino.common.dao.UserDao;
+import it.marcodemartino.common.database.UserDatabase;
 import it.marcodemartino.server.handler.ClientHandler;
+import it.marcodemartino.server.services.RegistrationService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,12 +25,14 @@ public class SSLServer implements Server {
 
     private final Logger logger = LogManager.getLogger(SSLServer.class);
     private final int port;
+    private final String emailPassword;
     private final List<Application> clients;
     private boolean running;
     private SSLServerSocket serverSocket;
 
-    public SSLServer(int port) {
+    public SSLServer(int port, String emailPassword) {
         this.port = port;
+        this.emailPassword = emailPassword;
         this.running = true;
         clients = new ArrayList<>();
     }
@@ -47,13 +57,26 @@ public class SSLServer implements Server {
         enableSSLProtocols(serverSocket);
         logger.info("Started the SSL socket server on the IP: {}", serverSocket.getInetAddress());
 
+        AsymmetricKeyReader asymmetricKeyReader = new AsymmetricKeyFileReader();
+        KeyPair keyPair = asymmetricKeyReader.readKeyPair("public_key.der", "private_key.der");
+
+        AsymmetricEncryption asymmetricEncryption = new RSAEncryption(2048);
+        asymmetricEncryption.setKeys(keyPair);
+
+        EmailProvider emailProvider = new GmailProvider("e2ee.messaging.app@gmail.com", emailPassword);
+        Database database = new UserDatabase();
+        database.initDatabase();
+        IUserDao userDao = new UserDao(database, asymmetricEncryption);
+
+        RegistrationService registrationService = new RegistrationService(emailProvider, userDao);
+
         while (running) {
             if (serverSocket.isClosed()) return;
             SSLSocket clientSocket = acceptNewConnection();
             if (clientSocket == null) return;
 
             logger.info("Received a connection with IP: {}", clientSocket.getInetAddress());
-            Application clientHandler = new ClientHandler(clientSocket);
+            Application clientHandler = new ClientHandler(clientSocket, registrationService);
             new Thread(clientHandler).start();
         }
     }
@@ -100,7 +123,6 @@ public class SSLServer implements Server {
             start(port);
         } catch (IOException | KeyStoreException | CertificateException | NoSuchAlgorithmException |
                  UnrecoverableKeyException | KeyManagementException e) {
-            System.out.println(running);
             e.printStackTrace();
         }
     }

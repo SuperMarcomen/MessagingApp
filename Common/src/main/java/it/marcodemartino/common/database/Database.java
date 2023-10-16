@@ -1,11 +1,12 @@
 package it.marcodemartino.common.database;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 public interface Database {
 
-    void createDatabase();
-    void getConnection();
+    void initDatabase();
+    Connection getConnection();
     PreparedStatement createPreparedStatement(String sql);
     void closeConnection();
 

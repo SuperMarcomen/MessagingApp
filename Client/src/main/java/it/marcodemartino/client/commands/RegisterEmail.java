@@ -10,7 +10,6 @@ public class RegisterEmail implements UserCommand {
     // Matches "/register <username> <email>" where <email> is a valid email
     private static final String COMMAND_REGEX = "/register\\s+\\w.+\\s+[\\w.-]+@[\\w.-]+\\.\\w+";
     private final OutputEmitter out;
-    private String input;
 
     public RegisterEmail(OutputEmitter out) {
         this.out = out;

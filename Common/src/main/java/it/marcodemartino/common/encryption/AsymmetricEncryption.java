@@ -1,13 +1,9 @@
 package it.marcodemartino.common.encryption;
 
-import java.security.PrivateKey;
 import java.security.PublicKey;
 
-public interface AsymmetricEncryption {
+public interface AsymmetricEncryption extends AsymmetricKeyConstructor{
 
-    void generateKeyPair();
-    PublicKey getPublicKey();
-    PrivateKey getPrivateKey();
     byte[] encryptFromString(String input);
     byte[] encrypt(byte[] input);
     String decryptToString(byte[] input);

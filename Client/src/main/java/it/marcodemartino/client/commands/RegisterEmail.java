@@ -7,8 +7,8 @@ import it.marcodemartino.common.json.RegisterEmailObject;
 
 public class RegisterEmail implements UserCommand {
 
-    // Matches "/register <username> <email>" where <email> is a valid email
-    private static final String COMMAND_REGEX = "/register\\s+\\w.+\\s+[\\w.-]+@[\\w.-]+\\.\\w+";
+    // Matches "/register <email>" where <email> is a valid email
+    private static final String COMMAND_REGEX = "/register\\s+[\\w.-]+@[\\w.-]+\\.\\w+";
     private final OutputEmitter out;
 
     public RegisterEmail(OutputEmitter out) {
@@ -18,9 +18,8 @@ public class RegisterEmail implements UserCommand {
     @Override
     public void execute(String input) {
         String[] args = input.split(" ");
-        String username = args[0];
-        String email = args[1];
-        JSONObject jsonObject = new RegisterEmailObject(username, email);
+        String email = args[0];
+        JSONObject jsonObject = new RegisterEmailObject(email);
         out.sendOutput(jsonObject);
     }
 
@@ -31,6 +30,6 @@ public class RegisterEmail implements UserCommand {
 
     @Override
     public String getCorrectFormat() {
-        return "/register <username> <email>";
+        return "/register <email>";
     }
 }

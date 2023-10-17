@@ -1,7 +1,6 @@
 package it.marcodemartino.client;
 
-import it.marcodemartino.client.commands.RegisterEmail;
-import it.marcodemartino.client.commands.SendPublicKeyCommand;
+import it.marcodemartino.client.commands.*;
 import it.marcodemartino.client.encryption.EncryptionService;
 import it.marcodemartino.client.errrors.ConsoleErrorManager;
 import it.marcodemartino.client.inputs.ConsoleInputEmitter;
@@ -27,6 +26,7 @@ public class MessagingApp {
 
         JsonCommandManager jsonCommandManager = new JsonCommandManager();
         jsonCommandManager.registerCommand(JSONMethods.SEND_PUBLIC_KEY, new SendPublicKeyCommand(encryptionService.getAsymmetricEncryption(), encryptionService));
+        jsonCommandManager.registerCommand(JSONMethods.REGISTRATION_RESULT, new RegistrationResultCommand());
 
         inputEmitter.registerInputListener(commandManager);
         application.getIO().registerInputListener(jsonCommandManager);

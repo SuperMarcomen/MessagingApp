@@ -22,7 +22,7 @@ public class ClientHandler implements Application {
         this.applicationIO = new ClientHandlerIO(socket.getInputStream(), socket.getOutputStream());
 
         JsonCommandManager commandManager = new JsonCommandManager();
-        commandManager.registerCommand(JSONMethods.REGISTER_EMAIL, new RegisterCommand(registrationService));
+        commandManager.registerCommand(JSONMethods.REGISTER_EMAIL, new RegisterCommand(applicationIO, registrationService));
         commandManager.registerCommand(JSONMethods.REQUEST_PUBLIC_KEY, new RequestPublicKeyCommand(asymmetricEncryption, asymmetricEncryption.getPublicKey(), applicationIO));
         this.applicationIO.registerInputListener(commandManager);
     }

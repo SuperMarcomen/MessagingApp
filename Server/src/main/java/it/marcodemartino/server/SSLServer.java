@@ -9,6 +9,7 @@ import it.marcodemartino.common.email.EmailProvider;
 import it.marcodemartino.common.email.GmailProvider;
 import it.marcodemartino.common.encryption.*;
 import it.marcodemartino.server.handler.ClientHandler;
+import it.marcodemartino.server.services.CertificatesService;
 import it.marcodemartino.server.services.RegistrationService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,12 +59,11 @@ public class SSLServer implements Server {
         enableSSLProtocols(serverSocket);
         logger.info("Started the SSL socket server on the IP: {}", serverSocket.getInetAddress());
 
-        AsymmetricEncryption asymmetricEncryption = new RSAEncryption(2048);
+        EncryptionService encryptionService = new EncryptionService(2048);
+        encryptionService.loadKeysIfExist();
 
-        AsymmetricKeyReader asymmetricKeyReader = new AsymmetricKeyFileReader();
-        KeyPair keyPair = asymmetricKeyReader.readKeyPair("public_key.pem", "private_key.pem");
-
-        asymmetricEncryption.setKeys(keyPair);
+        AsymmetricEncryption asymmetricEncryption = encryptionService.getLocalAsymmetricEncryption();
+        CertificatesService certificatesService = new CertificatesService(asymmetricEncryption);
 
         EmailProvider emailProvider = new GmailProvider("e2ee.messaging.app@gmail.com", emailPassword);
         Database database = new UserDatabase();
@@ -78,7 +78,7 @@ public class SSLServer implements Server {
             if (clientSocket == null) return;
 
             logger.info("Received a connection with IP: {}", clientSocket.getInetAddress());
-            Application clientHandler = new ClientHandler(clientSocket, asymmetricEncryption, registrationService);
+            Application clientHandler = new ClientHandler(clientSocket, encryptionService, registrationService, certificatesService);
             new Thread(clientHandler).start();
         }
     }

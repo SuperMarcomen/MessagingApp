@@ -29,7 +29,7 @@ class UserDaoTest {
         asymmetricEncryption.generateKeyPair();
         userDao = new UserDao(database, asymmetricEncryption);
         publicKey = asymmetricEncryption.getPublicKey();
-        testUser = new User("Marco", "marco@gmail.com", UUID.randomUUID(), publicKey);
+        testUser = new User("Marco", "marco@gmail.com", UUID.randomUUID(), "publicKey");
     }
 
     @Test

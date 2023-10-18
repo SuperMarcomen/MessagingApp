@@ -1,6 +1,6 @@
 package it.marcodemartino.client.commands;
 
-import it.marcodemartino.client.encryption.EncryptionService;
+import it.marcodemartino.common.encryption.EncryptionService;
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.encryption.AsymmetricKeyConstructor;
 import it.marcodemartino.common.json.SendPublicKeyObject;
@@ -23,6 +23,6 @@ public class SendPublicKeyCommand extends JsonCommand<SendPublicKeyObject> {
     @Override
     protected void execute(SendPublicKeyObject sendPublicKeyObject) {
         logger.info("Received this public key from the server: {}", sendPublicKeyObject.getPublicKey());
-        encryptionService.setServerPublicKey(keyConstructor.constructKeyFromString(sendPublicKeyObject.getPublicKey()));
+        encryptionService.setOtherPublicKey(keyConstructor.constructKeyFromString(sendPublicKeyObject.getPublicKey()));
     }
 }

@@ -1,7 +1,7 @@
 package it.marcodemartino.client;
 
 import it.marcodemartino.client.commands.*;
-import it.marcodemartino.client.encryption.EncryptionService;
+import it.marcodemartino.common.encryption.EncryptionService;
 import it.marcodemartino.client.errrors.ConsoleErrorManager;
 import it.marcodemartino.client.inputs.ConsoleInputEmitter;
 import it.marcodemartino.client.socket.SSLSocketClient;
@@ -17,16 +17,20 @@ public class MessagingApp {
         Application application = new SSLSocketClient("127.0.0.1", 8443);
         Thread thread = new Thread(application);
 
-        EncryptionService encryptionService = new EncryptionService();
+        EncryptionService encryptionService = new EncryptionService(2048);
+        encryptionService.loadOrGenerateKeys();
 
         InputEmitter inputEmitter = new ConsoleInputEmitter();
         UserCommandManager commandManager = new UserCommandManager(new ConsoleErrorManager());
         commandManager.registerUserCommand("register", new RegisterEmail(application.getIO()));
-        commandManager.registerUserCommand("verify", new VerifyCommand(application.getIO(), encryptionService, encryptionService.getAsymmetricEncryption()));
+        commandManager.registerUserCommand("verify", new VerifyCommand(application.getIO(), encryptionService, encryptionService.getLocalAsymmetricEncryption()));
 
         JsonCommandManager jsonCommandManager = new JsonCommandManager();
-        jsonCommandManager.registerCommand(JSONMethods.SEND_PUBLIC_KEY, new SendPublicKeyCommand(encryptionService.getAsymmetricEncryption(), encryptionService));
+        jsonCommandManager.registerCommand(JSONMethods.SEND_PUBLIC_KEY, new SendPublicKeyCommand(encryptionService.getLocalAsymmetricEncryption(), encryptionService));
         jsonCommandManager.registerCommand(JSONMethods.REGISTRATION_RESULT, new RegistrationResultCommand());
+        jsonCommandManager.registerCommand(JSONMethods.ENCRYPTED_SIGNED_MESSAGE, new SignedEncryptedMessageCommand(application.getIO().getEventManager(), encryptionService.getLocalAsymmetricEncryption(), encryptionService));
+        jsonCommandManager.registerCommand(JSONMethods.IDENTITY_CERTIFICATE, new SendIdentityCertificateCommand(encryptionService));
+
 
         inputEmitter.registerInputListener(commandManager);
         application.getIO().registerInputListener(jsonCommandManager);

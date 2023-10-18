@@ -67,7 +67,7 @@ public class UserDao implements IUserDao {
         String publicKeyString = rs.getString("rsa_public_key");
         PublicKey publicKey = keyConstructor.constructKeyFromString(publicKeyString);
 
-        return new User(username, email, uuid, publicKey);
+        return new User(username, email, uuid, publicKeyString);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class UserDao implements IUserDao {
             preparedStatement.setString(1, user.getUuid().toString());
             preparedStatement.setString(2, user.getName());
             preparedStatement.setString(3, user.getEmail());
-            preparedStatement.setString(4, keyConstructor.publicKeyToString(user.getPublicKey()));
+            preparedStatement.setString(4, user.getPublicKey());
             preparedStatement.execute();
         } catch (SQLException e) {
             logger.error("There was an error inserting the user {} in the database", user.getUuid().toString(), e);

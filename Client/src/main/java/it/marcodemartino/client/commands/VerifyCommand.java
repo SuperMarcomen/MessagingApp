@@ -1,6 +1,6 @@
 package it.marcodemartino.client.commands;
 
-import it.marcodemartino.client.encryption.EncryptionService;
+import it.marcodemartino.common.encryption.EncryptionService;
 import it.marcodemartino.common.commands.UserCommand;
 import it.marcodemartino.common.encryption.AsymmetricKeyConstructor;
 import it.marcodemartino.common.io.emitters.OutputEmitter;
@@ -26,7 +26,7 @@ public class VerifyCommand implements UserCommand {
         String email = args[0];
         int verificationCode = Integer.parseInt(args[1]);
         String username = args[2];
-        String publicKey = keyConstructor.publicKeyToString(encryptionService.getClientPublicKey());
+        String publicKey = keyConstructor.publicKeyToString(encryptionService.getLocalAsymmetricEncryption().getPublicKey());
         JSONObject verificationObject = new EmailVerificationObject(email, verificationCode, username, publicKey);
         outputEmitter.sendOutput(encryptionService.encryptMessage(verificationObject));
     }

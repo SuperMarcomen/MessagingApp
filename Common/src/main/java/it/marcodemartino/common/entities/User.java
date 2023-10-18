@@ -1,6 +1,5 @@
 package it.marcodemartino.common.entities;
 
-import java.security.PublicKey;
 import java.util.UUID;
 
 public class User {
@@ -8,9 +7,9 @@ public class User {
     private final String name;
     private final String email;
     private final UUID uuid;
-    private final PublicKey publicKey;
+    private final String publicKey;
 
-    public User(String name, String email, UUID uuid, PublicKey publicKey) {
+    public User(String name, String email, UUID uuid, String publicKey) {
         this.name = name;
         this.email = email;
         this.uuid = uuid;
@@ -29,7 +28,7 @@ public class User {
         return uuid;
     }
 
-    public PublicKey getPublicKey() {
+    public String getPublicKey() {
         return publicKey;
     }
 }

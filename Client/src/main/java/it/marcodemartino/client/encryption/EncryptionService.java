@@ -1,6 +1,8 @@
 package it.marcodemartino.client.encryption;
 
+import com.google.gson.Gson;
 import it.marcodemartino.common.encryption.*;
+import it.marcodemartino.common.json.*;
 
 import java.nio.file.*;
 import java.security.KeyPair;
@@ -9,15 +11,24 @@ import java.security.PublicKey;
 public class EncryptionService {
 
     private final AsymmetricEncryption asymmetricEncryption;
+    private final AsymmetricEncryption serverEncryption;
     private final AsymmetricKeyWriter keyWriter;
     private final AsymmetricKeyReader keyReader;
-    private PublicKey serverPublicKey;
+    private final Gson gson;
 
     public EncryptionService() {
         asymmetricEncryption = new RSAEncryption(2048);
+        serverEncryption = new RSAEncryption(2048);
         keyWriter = new AsymmetricKeyFileWriter();
         keyReader = new AsymmetricKeyFileReader();
         loadOrGenerateKeys();
+        gson = GsonInstance.get();
+    }
+
+    public JSONObject encryptMessage(JSONObject jsonObject) {
+        String json = gson.toJson(jsonObject);
+        byte[][] encryptedJson = serverEncryption.encryptFromString(json);
+        return new EncryptedMessageObject(encryptedJson);
     }
 
     private void loadOrGenerateKeys() {
@@ -30,13 +41,16 @@ public class EncryptionService {
         }
     }
 
+    public PublicKey getClientPublicKey() {
+        return asymmetricEncryption.getPublicKey();
+    }
 
     private boolean doKeysExist() {
         return Files.exists(Paths.get("public_key.pem")) && Files.exists(Paths.get("private_key.pem"));
     }
 
     public void setServerPublicKey(PublicKey serverPublicKey) {
-        this.serverPublicKey = serverPublicKey;
+        serverEncryption.setKeys(new KeyPair(serverPublicKey, null));
     }
 
     public AsymmetricEncryption getAsymmetricEncryption() {

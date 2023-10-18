@@ -9,8 +9,7 @@ import it.marcodemartino.common.application.Application;
 import it.marcodemartino.common.commands.JsonCommandManager;
 import it.marcodemartino.common.commands.UserCommandManager;
 import it.marcodemartino.common.io.emitters.InputEmitter;
-import it.marcodemartino.common.json.JSONMethods;
-import it.marcodemartino.common.json.RequestPublicKeyObject;
+import it.marcodemartino.common.json.*;
 
 public class MessagingApp {
 
@@ -23,6 +22,7 @@ public class MessagingApp {
         InputEmitter inputEmitter = new ConsoleInputEmitter();
         UserCommandManager commandManager = new UserCommandManager(new ConsoleErrorManager());
         commandManager.registerUserCommand("register", new RegisterEmail(application.getIO()));
+        commandManager.registerUserCommand("verify", new VerifyCommand(application.getIO(), encryptionService, encryptionService.getAsymmetricEncryption()));
 
         JsonCommandManager jsonCommandManager = new JsonCommandManager();
         jsonCommandManager.registerCommand(JSONMethods.SEND_PUBLIC_KEY, new SendPublicKeyCommand(encryptionService.getAsymmetricEncryption(), encryptionService));

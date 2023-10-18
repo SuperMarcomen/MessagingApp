@@ -34,7 +34,6 @@ public class SocketIO implements ApplicationIO {
         logger.info("Starting to listen for inputs from the server");
         while (running) {
             String input = tryGetInput();
-            logger.info("Received the input: {}", input);
             if (input.equals(QUIT_MESSAGE)) return;
 
             eventManager.notifyInputListeners(input);
@@ -51,7 +50,6 @@ public class SocketIO implements ApplicationIO {
     @Override
     public void sendOutput(JSONObject object) {
         String output = gson.toJson(object);
-        logger.info("Sending this message to the server: {}", output);
         out.println(output);
     }
 
@@ -81,4 +79,8 @@ public class SocketIO implements ApplicationIO {
         }
     }
 
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
+    }
 }

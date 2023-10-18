@@ -37,6 +37,7 @@ public class UserCommandManager extends CommandManager {
     }
 
     private String getArgs(String firstWord, String input) {
+        if (firstWord.length() + 1 >= input.length()) return "";
         return input.substring(firstWord.length() + 2);
     }
 

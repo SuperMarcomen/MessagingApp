@@ -22,13 +22,20 @@ public class RegisterCommand extends JsonCommand<RegisterEmailObject> {
     @Override
     protected void execute(RegisterEmailObject object) {
         logger.info("Received a request to register a user with the email {}", object.getEmail());
-        JSONObject jsonObject;
-        if (registrationService.isEmailAlreadyUsed(object.getEmail())) {
-            jsonObject = new RegistrationResultObject(RegistrationResult.EMAIL_ALREADY_USED);
+        String email = object.getEmail();
+
+        RegistrationResult registrationResult;
+
+        if (registrationService.isRegistrationInProgress(email)) {
+            registrationResult = RegistrationResult.REGISTRATION_ALREADY_IN_PROGRESS;
+        } else if (registrationService.isEmailAlreadyUsed(object.getEmail())) {
+            registrationResult = RegistrationResult.EMAIL_ALREADY_USED;
         } else {
             registrationService.sendConfirmationCode(object.getEmail());
-            jsonObject = new RegistrationResultObject(RegistrationResult.CODE_SENT);
+            registrationResult = RegistrationResult.CODE_SENT;
         }
+
+        JSONObject jsonObject = new RegistrationResultObject(registrationResult);
         outputEmitter.sendOutput(jsonObject);
     }
 }

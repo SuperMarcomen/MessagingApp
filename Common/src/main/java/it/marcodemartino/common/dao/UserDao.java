@@ -42,6 +42,8 @@ public class UserDao implements IUserDao {
 
     @Override
     public List<User> getAll() {
+        if (!userMap.isEmpty()) return new ArrayList<>(userMap.values());
+
         String sql = "SELECT * FROM users";
         List<User> users = new ArrayList<>();
 

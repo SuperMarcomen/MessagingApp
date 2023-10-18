@@ -5,8 +5,7 @@ import it.marcodemartino.common.application.ApplicationIO;
 import it.marcodemartino.common.commands.JsonCommandManager;
 import it.marcodemartino.common.encryption.AsymmetricEncryption;
 import it.marcodemartino.common.json.JSONMethods;
-import it.marcodemartino.server.commands.RegisterCommand;
-import it.marcodemartino.server.commands.RequestPublicKeyCommand;
+import it.marcodemartino.server.commands.*;
 import it.marcodemartino.server.services.RegistrationService;
 
 import java.io.IOException;
@@ -24,6 +23,8 @@ public class ClientHandler implements Application {
         JsonCommandManager commandManager = new JsonCommandManager();
         commandManager.registerCommand(JSONMethods.REGISTER_EMAIL, new RegisterCommand(applicationIO, registrationService));
         commandManager.registerCommand(JSONMethods.REQUEST_PUBLIC_KEY, new RequestPublicKeyCommand(asymmetricEncryption, asymmetricEncryption.getPublicKey(), applicationIO));
+        commandManager.registerCommand(JSONMethods.ENCRYPTED_MESSAGE, new EncryptedMessageCommand(applicationIO.getEventManager(), asymmetricEncryption));
+        commandManager.registerCommand(JSONMethods.EMAIL_VERIFICATION, new EmailVerificationCommand(asymmetricEncryption, applicationIO, registrationService));
         this.applicationIO.registerInputListener(commandManager);
     }
 

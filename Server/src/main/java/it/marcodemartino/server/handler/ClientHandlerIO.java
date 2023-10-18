@@ -78,4 +78,9 @@ public class ClientHandlerIO implements ApplicationIO {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public EventManager getEventManager() {
+        return eventManager;
+    }
 }

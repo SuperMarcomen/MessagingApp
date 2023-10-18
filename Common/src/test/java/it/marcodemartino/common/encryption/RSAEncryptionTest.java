@@ -38,7 +38,7 @@ class RSAEncryptionTest {
     @DisplayName("Sign a string and check if it's signature is valid")
     void sign() {
         String message = "Mammt";
-        byte[] signature = asymmetricEncryption.signFromString(message);
+        byte[][] signature = asymmetricEncryption.signFromString(message);
         boolean isSignatureValid = asymmetricEncryption.checkSignatureFromString(signature, message, asymmetricEncryption.getPublicKey());
         assertTrue(isSignatureValid);
     }

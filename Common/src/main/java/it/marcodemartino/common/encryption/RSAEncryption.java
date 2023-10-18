@@ -13,7 +13,7 @@ import java.util.Base64;
 public class RSAEncryption implements AsymmetricEncryption {
 
     private final Logger logger = LogManager.getLogger(RSAEncryption.class);
-    private static final int CHUNK_SIZE = 50;
+    private static final int CHUNK_SIZE = 245;
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private KeyPairGenerator generator;
@@ -108,26 +108,30 @@ public class RSAEncryption implements AsymmetricEncryption {
     @Override
     public byte[][] encrypt(byte[] input) {
         try {
-            int inputLength = input.length;
-            int numChunks = (inputLength + CHUNK_SIZE - 1) / CHUNK_SIZE;
-            byte[][] encryptedChunks = new byte[numChunks][];
-
-            int offset = 0;
-            for (int i = 0; i < numChunks; i++) {
-                int length = Math.min(CHUNK_SIZE, inputLength - offset);
-                byte[] chunk = new byte[length];
-                System.arraycopy(input, offset, chunk, 0, length);
-
-                byte[] encryptedChunk = encryptCipher.doFinal(chunk);
-                encryptedChunks[i] = encryptedChunk;
-
-                offset += length;
-            }
-            return encryptedChunks;
+            return encryptWithKey(input, encryptCipher);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
             logger.error("There was an error while encrypting the input: {}", new String(input, StandardCharsets.UTF_8), e);
         }
         return new byte[0][];
+    }
+
+    private byte[][] encryptWithKey(byte[] input, Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
+        int inputLength = input.length;
+        int numChunks = (inputLength + CHUNK_SIZE - 1) / CHUNK_SIZE;
+        byte[][] encryptedChunks = new byte[numChunks][];
+
+        int offset = 0;
+        for (int i = 0; i < numChunks; i++) {
+            int length = Math.min(CHUNK_SIZE, inputLength - offset);
+            byte[] chunk = new byte[length];
+            System.arraycopy(input, offset, chunk, 0, length);
+
+            byte[] encryptedChunk = cipher.doFinal(chunk);
+            encryptedChunks[i] = encryptedChunk;
+
+            offset += length;
+        }
+        return encryptedChunks;
     }
 
     @Override
@@ -138,59 +142,64 @@ public class RSAEncryption implements AsymmetricEncryption {
     @Override
     public byte[] decrypt(byte[][] input) {
         try {
-            int totalSize = Arrays.stream(input).mapToInt(a -> a.length).sum();
-            byte[] decryptedData = new byte[totalSize];
-            int decryptedOffset = 0;
-
-            for (byte[] encryptedChunk : input) {
-                byte[] decryptedChunk = decryptCipher.doFinal(encryptedChunk);
-                System.arraycopy(decryptedChunk, 0, decryptedData, decryptedOffset, decryptedChunk.length);
-                decryptedOffset += decryptedChunk.length;
-            }
-            // Ensure the final decryptedData has the correct size
-            if (decryptedOffset < decryptedData.length) {
-                decryptedData = Arrays.copyOf(decryptedData, decryptedOffset);
-            }
-            return decryptedData;
+            return decryptWithKey(input, decryptCipher);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
             logger.error("There was an error while decrypting the input", e);
         }
         return new byte[0];
     }
 
+    private byte[] decryptWithKey(byte[][] input, Cipher cipher) throws IllegalBlockSizeException, BadPaddingException {
+        int totalSize = Arrays.stream(input).mapToInt(a -> a.length).sum();
+        byte[] decryptedData = new byte[totalSize];
+        int decryptedOffset = 0;
+
+        for (byte[] encryptedChunk : input) {
+            byte[] decryptedChunk = cipher.doFinal(encryptedChunk);
+            System.arraycopy(decryptedChunk, 0, decryptedData, decryptedOffset, decryptedChunk.length);
+            decryptedOffset += decryptedChunk.length;
+        }
+        // Ensure the final decryptedData has the correct size
+        if (decryptedOffset < decryptedData.length) {
+            decryptedData = Arrays.copyOf(decryptedData, decryptedOffset);
+        }
+        return decryptedData;
+    }
+
     @Override
-    public byte[] signFromString(String input) {
+    public byte[][] signFromString(String input) {
         return sign(input.getBytes(StandardCharsets.UTF_8));
     }
 
 
     @Override
-    public byte[] sign(byte[] input) {
+    public byte[][] sign(byte[] input) {
         try {
-            return signatureCipher.doFinal(input);
+            return encryptWithKey(input, signatureCipher);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
             logger.error("There was an error while decrypting the input: {}", new String(input, StandardCharsets.UTF_8), e);
         }
-        return new byte[0];
+        return new byte[0][];
     }
 
     @Override
-    public boolean checkSignatureFromString(byte[] toBeChecked, String shouldBe, PublicKey publicKey) {
+    public boolean checkSignatureFromString(byte[][] toBeChecked, String shouldBe, PublicKey publicKey) {
         return checkSignature(toBeChecked, shouldBe.getBytes(StandardCharsets.UTF_8), publicKey);
     }
 
     @Override
-    public boolean checkSignature(byte[] toBeChecked, byte[] shouldBe, PublicKey publicKey) {
+    public boolean checkSignature(byte[][] toBeChecked, byte[] shouldBe, PublicKey publicKey) {
         byte[] uncryptedBytes = new byte[0];
         try {
             signatureCheckCipher.init(Cipher.DECRYPT_MODE, publicKey);
         } catch (InvalidKeyException e) {
             logger.error("Could not init the cipher", e);
         }
+
         try {
-            uncryptedBytes = signatureCheckCipher.doFinal(toBeChecked);
+            uncryptedBytes = decryptWithKey(toBeChecked, signatureCheckCipher);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
-            logger.error("There was an error while decrypting the input: {}", new String(toBeChecked, StandardCharsets.UTF_8), e);
+            logger.error("There was an error while verifying the input: {}", new String(shouldBe, StandardCharsets.UTF_8), e);
         }
         return Arrays.equals(uncryptedBytes, shouldBe);
     }

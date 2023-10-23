@@ -2,7 +2,6 @@ package it.marcodemartino.server.entities;
 
 public class Registration {
 
-
     private static final int MAX_WRONG_TRIES = 3;
     private static final int TIMEOUT_SECONDS = 30;
     private int verificationCode;
@@ -45,7 +44,9 @@ public class Registration {
     }
 
     private int generateRandomNumber(int length) {
-        return (int) (Math.random() * Math.pow(10, length));
+        int min = (int) Math.pow(10, length - 1);
+        int max = (int) Math.pow(10, length) - 1;
+        return min + (int) (Math.random() * (max - min + 1));
     }
 
     public int getVerificationCode() {

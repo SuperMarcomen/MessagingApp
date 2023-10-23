@@ -2,7 +2,7 @@ package it.marcodemartino.client.commands;
 
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.encryption.AsymmetricEncryption;
-import it.marcodemartino.common.encryption.EncryptionService;
+import it.marcodemartino.common.services.EncryptionService;
 import it.marcodemartino.common.io.EventManager;
 import it.marcodemartino.common.json.EncryptedMessageObject;
 import it.marcodemartino.common.json.SignedEncryptedMessageObject;

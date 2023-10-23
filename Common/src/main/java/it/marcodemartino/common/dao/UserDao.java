@@ -1,12 +1,10 @@
 package it.marcodemartino.common.dao;
 
 import it.marcodemartino.common.database.Database;
-import it.marcodemartino.common.encryption.AsymmetricKeyConstructor;
 import it.marcodemartino.common.entities.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.security.PublicKey;
 import java.sql.*;
 import java.util.*;
 
@@ -14,21 +12,27 @@ public class UserDao implements IUserDao {
 
     private final Logger logger = LogManager.getLogger(UserDao.class);
     private final Database database;
-    private final AsymmetricKeyConstructor keyConstructor;
     private final Map<UUID, User> userMap;
+    private final Map<String, UUID> mailUUIDMap;
 
-    public UserDao(Database database, AsymmetricKeyConstructor keyConstructor) {
+    public UserDao(Database database) {
         this.database = database;
-        this.keyConstructor = keyConstructor;
         userMap = new HashMap<>();
+        mailUUIDMap = new HashMap<>();
         for (User user : getAll()) {
             userMap.put(user.getUuid(), user);
+            mailUUIDMap.put(user.getEmail(), user.getUuid());
         }
     }
 
     @Override
     public User getByUUID(UUID uuid) {
         return userMap.get(uuid);
+    }
+
+    @Override
+    public User getByEmail(String email) {
+        return getByUUID(mailUUIDMap.get(email));
     }
 
     @Override
@@ -65,14 +69,13 @@ public class UserDao implements IUserDao {
         String username = rs.getString("username");
         String email = rs.getString("email");
         String publicKeyString = rs.getString("rsa_public_key");
-        PublicKey publicKey = keyConstructor.constructKeyFromString(publicKeyString);
-
         return new User(username, email, uuid, publicKeyString);
     }
 
     @Override
     public void insert(User user) {
         userMap.put(user.getUuid(), user);
+        mailUUIDMap.put(user.getEmail(), user.getUuid());
         String sql = "INSERT INTO users (user_id, username, email, rsa_public_key) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = database.createPreparedStatement(sql)) {
             preparedStatement.setString(1, user.getUuid().toString());

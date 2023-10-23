@@ -3,12 +3,11 @@ package it.marcodemartino.server.commands;
 import it.marcodemartino.common.certificates.IdentityCertificate;
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.encryption.AsymmetricKeyConstructor;
-import it.marcodemartino.common.encryption.EncryptionService;
+import it.marcodemartino.common.services.EncryptionService;
 import it.marcodemartino.common.entities.User;
 import it.marcodemartino.common.io.emitters.OutputEmitter;
 import it.marcodemartino.common.json.*;
-import it.marcodemartino.server.services.CertificatesService;
-import it.marcodemartino.server.services.RegistrationService;
+import it.marcodemartino.server.services.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,14 +21,16 @@ public class EmailVerificationCommand extends JsonCommand<EmailVerificationObjec
     private final RegistrationService registrationService;
     private final CertificatesService certificatesService;
     private final EncryptionService encryptionService;
+    private final MessagingService messagingService;
 
-    public EmailVerificationCommand(AsymmetricKeyConstructor asymmetricKeyConstructor, OutputEmitter outputEmitter, RegistrationService registrationService, CertificatesService certificatesService, EncryptionService encryptionService) {
+    public EmailVerificationCommand(AsymmetricKeyConstructor asymmetricKeyConstructor, OutputEmitter outputEmitter, RegistrationService registrationService, CertificatesService certificatesService, EncryptionService encryptionService, MessagingService messagingService) {
         super(EmailVerificationObject.class);
         this.asymmetricKeyConstructor = asymmetricKeyConstructor;
         this.outputEmitter = outputEmitter;
         this.registrationService = registrationService;
         this.certificatesService = certificatesService;
         this.encryptionService = encryptionService;
+        this.messagingService = messagingService;
     }
 
     @Override
@@ -54,6 +55,7 @@ public class EmailVerificationCommand extends JsonCommand<EmailVerificationObjec
             registrationService.registerUser(user);
 
             IdentityCertificate identityCertificate = certificatesService.generateCertificate(user);
+            messagingService.addClient(email, outputEmitter);
             JSONObject jsonObject = new SendIdentityCertificateObject(identityCertificate);
             outputEmitter.sendOutput(encryptionService.encryptAndSignMessage(jsonObject, publicKey));
         } else {

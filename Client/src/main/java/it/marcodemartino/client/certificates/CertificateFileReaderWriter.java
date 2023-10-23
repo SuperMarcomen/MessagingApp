@@ -3,6 +3,8 @@ package it.marcodemartino.client.certificates;
 import com.google.gson.Gson;
 import it.marcodemartino.common.certificates.IdentityCertificate;
 import it.marcodemartino.common.json.GsonInstance;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,41 +13,57 @@ import java.util.Base64;
 
 public class CertificateFileReaderWriter implements CertificateReaderWriter {
 
-    private final Gson gson;
     private static final String CERTIFICATE_FILE_NAME = "identity_certificate.pem";
+    private final Logger logger = LogManager.getLogger(CertificateFileReaderWriter.class);
+    private final Gson gson;
+    private final Path certificatePath;
 
-    public CertificateFileReaderWriter() {
+    public CertificateFileReaderWriter(Path path) {
         gson = GsonInstance.get();
+        certificatePath = getCertificatePath(path);
     }
 
     @Override
-    public IdentityCertificate readCertificate(Path path) {
-        String base64Json = tryReadCertificate(path);
+    public IdentityCertificate readCertificate() {
+        String base64Json = tryReadCertificate();
+        if (base64Json.isEmpty()) return null;
         byte[] jsonBytes = Base64.getDecoder().decode(base64Json.getBytes(StandardCharsets.UTF_8));
         String json = new String(jsonBytes, StandardCharsets.UTF_8);
-        return gson.fromJson(json, IdentityCertificate.class);
+        IdentityCertificate identityCertificate = gson.fromJson(json, IdentityCertificate.class);
+        logger.info("Read a certificate for {}", identityCertificate.getUser().getEmail());
+        return identityCertificate;
     }
 
-    private String tryReadCertificate(Path path) {
+    private String tryReadCertificate() {
         try {
-             return Files.readString(Paths.get(path.toAbsolutePath().toString(), CERTIFICATE_FILE_NAME));
+             return Files.readString(certificatePath);
         } catch (IOException e) {
+            logger.error("There was an error trying to read the certificate!", e);
         }
         return "";
     }
 
     @Override
-    public void writeCertificate(IdentityCertificate identityCertificate, Path path) {
-        String json = gson.toJson(identityCertificate);
-        String base64JSon = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
-        tryWriteCertificate(path, base64JSon);
+    public boolean doesCertificateExist() {
+        return Files.exists(certificatePath);
     }
 
-    private void tryWriteCertificate(Path path, String base64JSon) {
+    @Override
+    public void writeCertificate(IdentityCertificate identityCertificate) {
+        String json = gson.toJson(identityCertificate);
+        String base64JSon = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+        tryWriteCertificate(base64JSon);
+    }
+
+    private void tryWriteCertificate(String base64JSon) {
         try {
-            Files.writeString(Paths.get(path.toAbsolutePath().toString(), CERTIFICATE_FILE_NAME), base64JSon);
+            Files.writeString(certificatePath, base64JSon);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.error("There was an error writing the certificate to file!", e);
         }
+    }
+
+    private Path getCertificatePath(Path path) {
+        return Paths.get(path.toAbsolutePath().toString(), CERTIFICATE_FILE_NAME);
     }
 }

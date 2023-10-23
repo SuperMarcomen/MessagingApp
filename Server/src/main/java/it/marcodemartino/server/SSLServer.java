@@ -8,9 +8,9 @@ import it.marcodemartino.common.database.UserDatabase;
 import it.marcodemartino.common.email.EmailProvider;
 import it.marcodemartino.common.email.GmailProvider;
 import it.marcodemartino.common.encryption.*;
+import it.marcodemartino.common.services.*;
 import it.marcodemartino.server.handler.ClientHandler;
-import it.marcodemartino.server.services.CertificatesService;
-import it.marcodemartino.server.services.RegistrationService;
+import it.marcodemartino.server.services.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,18 +59,23 @@ public class SSLServer implements Server {
         enableSSLProtocols(serverSocket);
         logger.info("Started the SSL socket server on the IP: {}", serverSocket.getInetAddress());
 
-        EncryptionService encryptionService = new EncryptionService(2048);
-        encryptionService.loadKeysIfExist();
-
-        AsymmetricEncryption asymmetricEncryption = encryptionService.getLocalAsymmetricEncryption();
-        CertificatesService certificatesService = new CertificatesService(asymmetricEncryption);
-
-        EmailProvider emailProvider = new GmailProvider("e2ee.messaging.app@gmail.com", emailPassword);
         Database database = new UserDatabase();
         database.initDatabase();
-        IUserDao userDao = new UserDao(database, asymmetricEncryption);
+        IUserDao userDao = new UserDao(database);
+
+        AsymmetricEncryption localEncryption = new RSAEncryption(2048);
+        AsymmetricEncryption otherEncryption = new RSAEncryption(2048);
+        CertificatesService certificatesService = new CertificatesService(localEncryption);
+        KeysService keysService = new DatabaseKeysService(userDao);
+
+        EmailProvider emailProvider = new GmailProvider("e2ee.messaging.app@gmail.com", emailPassword);
 
         RegistrationService registrationService = new RegistrationService(emailProvider, userDao);
+
+        EncryptionService encryptionService = new EncryptionService(localEncryption, otherEncryption, keysService);
+        encryptionService.loadKeysIfExist();
+
+        MessagingService messagingService = new MessagingService();
 
         while (running) {
             if (serverSocket.isClosed()) return;
@@ -78,7 +83,7 @@ public class SSLServer implements Server {
             if (clientSocket == null) return;
 
             logger.info("Received a connection with IP: {}", clientSocket.getInetAddress());
-            Application clientHandler = new ClientHandler(clientSocket, encryptionService, registrationService, certificatesService);
+            Application clientHandler = new ClientHandler(clientSocket, encryptionService, registrationService, certificatesService, messagingService);
             new Thread(clientHandler).start();
         }
     }

@@ -27,7 +27,7 @@ class UserDaoTest {
         database.initDatabase();
         AsymmetricEncryption asymmetricEncryption = new RSAEncryption(2048);
         asymmetricEncryption.generateKeyPair();
-        userDao = new UserDao(database, asymmetricEncryption);
+        userDao = new UserDao(database);
         publicKey = asymmetricEncryption.getPublicKey();
         testUser = new User("Marco", "marco@gmail.com", UUID.randomUUID(), "publicKey");
     }

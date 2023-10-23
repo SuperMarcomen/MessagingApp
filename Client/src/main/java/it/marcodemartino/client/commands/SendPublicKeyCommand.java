@@ -1,6 +1,6 @@
 package it.marcodemartino.client.commands;
 
-import it.marcodemartino.common.encryption.EncryptionService;
+import it.marcodemartino.common.services.EncryptionService;
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.encryption.AsymmetricKeyConstructor;
 import it.marcodemartino.common.json.SendPublicKeyObject;

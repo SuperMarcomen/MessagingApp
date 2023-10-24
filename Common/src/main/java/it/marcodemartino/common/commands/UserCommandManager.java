@@ -1,35 +1,47 @@
 package it.marcodemartino.common.commands;
 
 import it.marcodemartino.common.errors.ErrorManager;
+import it.marcodemartino.common.io.listeners.InputListener;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserCommandManager extends CommandManager {
+public class UserCommandManager implements InputListener {
 
     private final Map<String, UserCommand> userCommands;
     private final ErrorManager errorManager;
 
     public UserCommandManager(ErrorManager errorManager) {
-        super();
         this.errorManager = errorManager;
         userCommands = new HashMap<>();
     }
 
     @Override
-    protected void executeCommand(String commandName, String input) {
-        UserCommand userCommand = userCommands.get(commandName);
-        if (userCommand != null) {
-            executeUserCommand(userCommand, input, getArgs(commandName, input));
+    public final void notify(String input) {
+        if (!input.startsWith("/")) {
+            errorManager.wrongCommandFormat();
             return;
         }
-
-        super.executeCommand(commandName, input);
+        String firstWord = getFirstWord(input);
+        executeCommand(firstWord, input);
     }
 
-    private void executeUserCommand(UserCommand command, String input, String args) {
+    private void executeCommand(String commandName, String input) {
+        UserCommand userCommand = userCommands.get(commandName);
+        if (userCommand == null) {
+            errorManager.commandNotRecognized(commandName);
+            return;
+        }
+        checkFormatAndExecute(userCommand, input, getArgs(commandName, input));
+    }
+
+    private static String getFirstWord(String input) {
+        return input.split(" ")[0].substring(1);
+    }
+
+    private void checkFormatAndExecute(UserCommand command, String input, String args) {
         if (!command.isFormatCorrect(input)) {
-            errorManager.wrongCommandFormat(command.getCorrectFormat());
+            errorManager.wrongCommandInputFormat(command.getCorrectFormat());
             return;
         }
 

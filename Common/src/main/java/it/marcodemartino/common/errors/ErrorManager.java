@@ -2,5 +2,8 @@ package it.marcodemartino.common.errors;
 
 public interface ErrorManager {
 
-    void wrongCommandFormat(String correctFormat);
+    void commandNotRecognized(String command);
+    void wrongCommandFormat();
+    void wrongCommandInputFormat(String correctFormat);
+
 }

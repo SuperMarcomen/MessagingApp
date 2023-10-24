@@ -1,14 +1,16 @@
 package it.marcodemartino.common.json;
 
+import it.marcodemartino.common.entities.User;
+
 public class CertifiedMessage implements JSONObject {
 
     private final JSONMethods method = JSONMethods.CERTIFIED_MESSAGE;
     private final String message;
-    private final String toEmail;
+    private final User fromUser;
 
-    public CertifiedMessage(String message, String toEmail) {
+    public CertifiedMessage(String message, User fromUser) {
         this.message = message;
-        this.toEmail = toEmail;
+        this.fromUser = fromUser;
     }
 
     @Override
@@ -20,7 +22,7 @@ public class CertifiedMessage implements JSONObject {
         return message;
     }
 
-    public String getToEmail() {
-        return toEmail;
+    public User getFromUser() {
+        return fromUser;
     }
 }

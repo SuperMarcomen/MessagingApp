@@ -2,7 +2,8 @@ package it.marcodemartino.client;
 
 import it.marcodemartino.client.certificates.CertificateFileReaderWriter;
 import it.marcodemartino.client.certificates.CertificateReaderWriter;
-import it.marcodemartino.client.commands.*;
+import it.marcodemartino.client.commands.jsoncommands.*;
+import it.marcodemartino.client.commands.usercommands.*;
 import it.marcodemartino.client.errrors.ConsoleErrorManager;
 import it.marcodemartino.client.inputs.ConsoleInputEmitter;
 import it.marcodemartino.client.services.CertificateService;
@@ -49,7 +50,7 @@ public class MessagingApp {
         jsonCommandManager.registerCommand(JSONMethods.REGISTRATION_RESULT, new RegistrationResultCommand());
         jsonCommandManager.registerCommand(JSONMethods.ENCRYPTED_SIGNED_MESSAGE, new SignedEncryptedMessageCommand(application.getIO().getEventManager(), localEncryption, encryptionService));
         jsonCommandManager.registerCommand(JSONMethods.IDENTITY_CERTIFICATE, new SendIdentityCertificateCommand(certificateService, encryptionService));
-        jsonCommandManager.registerCommand(JSONMethods.SEND_PUBLIC_KEY_OF, new ReceivePublicKeyOfCommand(encryptionService.getKeysService()));
+        jsonCommandManager.registerCommand(JSONMethods.SEND_PUBLIC_KEY_OF, new ReceivePublicKeyOfCommand(encryptionService.getKeysService(), encryptionService));
         jsonCommandManager.registerCommand(JSONMethods.ENCRYPTED_SIGNED_CERTIFIED_MESSAGE, new SignedEncryptedCertifiedCommand(encryptionService.getLocalAsymmetricEncryption(), application.getIO().getEventManager(), encryptionService));
         jsonCommandManager.registerCommand(JSONMethods.CERTIFIED_MESSAGE, new CertifiedMessageCommand());
 

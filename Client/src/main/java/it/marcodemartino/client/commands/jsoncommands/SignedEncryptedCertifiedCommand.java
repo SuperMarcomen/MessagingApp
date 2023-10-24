@@ -1,4 +1,4 @@
-package it.marcodemartino.client.commands;
+package it.marcodemartino.client.commands.jsoncommands;
 
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.encryption.AsymmetricKeyConstructor;
@@ -28,9 +28,21 @@ public class SignedEncryptedCertifiedCommand extends JsonCommand<SignedEncrypted
     protected void execute(SignedEncryptedCertifiedObject signedEncryptedCertifiedObject) {
         String decryptedMessage = encryptionService.decryptMessage(signedEncryptedCertifiedObject.getEncryptedMessage());
         boolean certificateValid = encryptionService.verifyIdentityCertificate(signedEncryptedCertifiedObject.getIdentityCertificate(), false);
+
+        if (!certificateValid) {
+            logger.warn("Received a user message with an invalid identity certificate!");
+            return;
+        }
+
         PublicKey otherPubKey = keyConstructor.constructKeyFromString(signedEncryptedCertifiedObject.getIdentityCertificate().getUser().getPublicKey());
         boolean signatureValid = encryptionService.verifyOtherSignature(signedEncryptedCertifiedObject.getSignature(), decryptedMessage, otherPubKey);
-        logger.info("Received an encrypted message: {} Certificate valid: {} Signature valid: {}", decryptedMessage, certificateValid, signatureValid);
+
+        if (!signatureValid) {
+            logger.warn("Received a user message with an invalid signature!");
+            return;
+        }
+
+        logger.info("Received an encrypted message. The certificate and the signature are valid");
         eventManager.notifyInputListeners(decryptedMessage);
     }
 }

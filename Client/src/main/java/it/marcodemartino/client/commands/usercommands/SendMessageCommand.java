@@ -1,4 +1,4 @@
-package it.marcodemartino.client.commands;
+package it.marcodemartino.client.commands.usercommands;
 
 import it.marcodemartino.client.services.CertificateService;
 import it.marcodemartino.common.commands.UserCommand;
@@ -36,7 +36,7 @@ public class SendMessageCommand implements UserCommand {
         String[] args = input.split(" ");
         String email = args[0];
         String message = getMessage(args, 1);
-        JSONObject jsonObject = new CertifiedMessage(message, email);
+        JSONObject jsonObject = new CertifiedMessage(message, certificateService.getIdentityCertificate().getUser());
         CompletableFuture<JSONObject> encryptedMessageFuture = new CompletableFuture<>();
         encryptedMessageFuture.thenAccept(encryptedObject -> {
             if (encryptedObject == null) {

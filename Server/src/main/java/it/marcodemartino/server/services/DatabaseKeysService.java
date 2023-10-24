@@ -14,7 +14,7 @@ public class DatabaseKeysService implements KeysService {
     }
 
     @Override
-    public void getPublicKeyOf(String email, CompletableFuture<String> keyFuture) {
+    public void requestPublicKeyOf(String email, CompletableFuture<String> keyFuture) {
         String publicKey = userDao.getByEmail(email).getPublicKey();
         keyFuture.complete(publicKey);
     }

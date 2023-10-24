@@ -34,7 +34,6 @@ public class ClientHandlerIO implements ApplicationIO {
     @Override
     public void sendOutput(JSONObject object) {
         String output = gson.toJson(object);
-        logger.info("Sending this message to the server: {}", object.getMethod());
         out.println(output);
     }
 
@@ -44,7 +43,6 @@ public class ClientHandlerIO implements ApplicationIO {
         while (running) {
             String input = getInput();
             if (!running) return;
-            logger.info("Received the input: {}", input);
             eventManager.notifyInputListeners(input);
         }
     }

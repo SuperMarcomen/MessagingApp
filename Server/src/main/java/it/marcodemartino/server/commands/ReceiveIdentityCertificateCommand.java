@@ -32,13 +32,23 @@ public class ReceiveIdentityCertificateCommand extends JsonCommand<SendIdentityC
     protected void execute(SendIdentityCertificateObject sendIdentityCertificateObject) {
         IdentityCertificate identityCertificate = sendIdentityCertificateObject.getIdentityCertificate();
         boolean certificateValid = encryptionService.verifyIdentityCertificate(identityCertificate, true);
+
+        if (!certificateValid) {
+            logger.warn("Received an invalid identity certificate!");
+            return;
+        }
+
         AsymmetricKeyConstructor keyConstructor = encryptionService.getLocalAsymmetricEncryption();
         String json = gson.toJson(identityCertificate);
         boolean signatureValid = encryptionService.verifyOtherSignature(sendIdentityCertificateObject.getSignature(), json, keyConstructor.constructKeyFromString(identityCertificate.getUser().getPublicKey()));
 
-        logger.info("Received a certificate from {}. Server signature valid: {}. User signature valid: {}", identityCertificate.getUser().getEmail(), certificateValid, signatureValid);
-        if (certificateValid) {
-            messagingService.addClient(identityCertificate.getUser().getEmail(), out);
+        if (!signatureValid) {
+            logger.warn("Received an identity certificate with an invalid user signature! (It was not sent by the owner)");
+            return;
         }
+
+        logger.info("Received a certificate from {}. The server signature and user signature are both valid", identityCertificate.getUser().getEmail());
+        messagingService.addClient(identityCertificate.getUser().getEmail(), out);
+
     }
 }

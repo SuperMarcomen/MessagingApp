@@ -1,4 +1,4 @@
-package it.marcodemartino.client.commands;
+package it.marcodemartino.client.commands.jsoncommands;
 
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.json.RegistrationResultObject;

@@ -25,7 +25,7 @@ public class RequestsKeysService implements KeysService {
     }
 
     @Override
-    public void getPublicKeyOf(String email, CompletableFuture<String> keyFuture) {
+    public void requestPublicKeyOf(String email, CompletableFuture<String> keyFuture) {
         if (emailPubKeyMap.containsKey(email)) {
             keyFuture.complete(asymmetricKeyConstructor.publicKeyToString(emailPubKeyMap.get(email)));
             emailPubKeyMap.get(email);

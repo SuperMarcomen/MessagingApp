@@ -28,11 +28,10 @@ public class RequestPublicKeyOfCommand extends JsonCommand<RequestPublicKeyOfObj
     protected void execute(RequestPublicKeyOfObject requestPublicKeyOfObject) {
         logger.info("Received request to provide public key of {}", requestPublicKeyOfObject.getRequestOf());
         CompletableFuture<String> pubKeyFuture = new CompletableFuture<>();
-        keysService.getPublicKeyOf(requestPublicKeyOfObject.getRequestOf(), pubKeyFuture);
+        keysService.requestPublicKeyOf(requestPublicKeyOfObject.getRequestOf(), pubKeyFuture);
         pubKeyFuture.thenAccept(publicKey -> {
-            logger.info("Found the public key of {}: {}", requestPublicKeyOfObject.getRequestOf(), publicKey);
-            JSONObject jsonObject = new SendPublicKeyOfObject(requestPublicKeyOfObject.getRequestOf(), publicKey);
-            // TODO sign this
+            logger.info("Found the public key of {}. Sending it...", requestPublicKeyOfObject.getRequestOf());
+            JSONObject jsonObject = new SendPublicKeyOfObject(requestPublicKeyOfObject.getRequestOf(), publicKey, encryptionService.signString(publicKey));
             out.sendOutput(jsonObject);
         });
     }

@@ -199,7 +199,7 @@ public class RSAEncryption implements AsymmetricEncryption {
         try {
             uncryptedBytes = decryptWithKey(toBeChecked, signatureCheckCipher);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
-            logger.error("There was an error while verifying the input: {}", new String(shouldBe, StandardCharsets.UTF_8), e);
+            logger.error("There was an error while verifying the signature of a user");
         }
         return Arrays.equals(uncryptedBytes, shouldBe);
     }

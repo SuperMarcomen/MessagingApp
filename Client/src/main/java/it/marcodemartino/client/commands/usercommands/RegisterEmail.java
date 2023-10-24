@@ -1,4 +1,4 @@
-package it.marcodemartino.client.commands;
+package it.marcodemartino.client.commands.usercommands;
 
 import it.marcodemartino.common.commands.UserCommand;
 import it.marcodemartino.common.io.emitters.OutputEmitter;

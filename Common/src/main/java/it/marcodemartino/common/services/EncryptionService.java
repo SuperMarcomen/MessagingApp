@@ -32,7 +32,11 @@ public class EncryptionService {
 
     public byte[][] signIdentityCertificate(IdentityCertificate identityCertificate) {
         String json = gson.toJson(identityCertificate);
-        return localAsymmetricEncryption.signFromString(json);
+        return signString(json);
+    }
+
+    public byte[][] signString(String string) {
+        return localAsymmetricEncryption.signFromString(string);
     }
 
     public void encryptSignAndCertifyMessage(JSONObject jsonObject, String email, IdentityCertificate identityCertificate, CompletableFuture<JSONObject> jsonFuture) {
@@ -55,7 +59,7 @@ public class EncryptionService {
             jsonFuture.complete(new SignedEncryptedCertifiedObject(encryptedJson, signedJson, email, identityCertificate));
         });
 
-        keysService.getPublicKeyOf(email, keyFuture);
+        keysService.requestPublicKeyOf(email, keyFuture);
     }
 
     public JSONObject encryptAndSignMessage(JSONObject jsonObject, PublicKey publicKey) {

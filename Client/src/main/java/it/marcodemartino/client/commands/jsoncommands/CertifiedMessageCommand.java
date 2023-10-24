@@ -1,4 +1,4 @@
-package it.marcodemartino.client.commands;
+package it.marcodemartino.client.commands.jsoncommands;
 
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.json.CertifiedMessage;
@@ -15,6 +15,7 @@ public class CertifiedMessageCommand extends JsonCommand<CertifiedMessage> {
 
     @Override
     protected void execute(CertifiedMessage certifiedMessage) {
-        logger.info("Received this message: {}", certifiedMessage.getMessage());
+        logger.info("Received a new message:");
+        logger.info("{} ({}): {}", certifiedMessage.getFromUser().getName(), certifiedMessage.getFromUser().getEmail(), certifiedMessage.getMessage());
     }
 }

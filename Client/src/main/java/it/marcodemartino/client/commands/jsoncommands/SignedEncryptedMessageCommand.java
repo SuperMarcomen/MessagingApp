@@ -1,4 +1,4 @@
-package it.marcodemartino.client.commands;
+package it.marcodemartino.client.commands.jsoncommands;
 
 import it.marcodemartino.common.commands.JsonCommand;
 import it.marcodemartino.common.encryption.AsymmetricEncryption;
@@ -25,11 +25,16 @@ public class SignedEncryptedMessageCommand extends JsonCommand<SignedEncryptedMe
 
     @Override
     protected void execute(SignedEncryptedMessageObject signedEncryptedMessageObject) {
-        logger.info("Received an encrypted message");
         byte[][] encryptedBytes = signedEncryptedMessageObject.getEncryptedMessage();
         String decryptedMessage = asymmetricEncryption.decryptToString(encryptedBytes);
         boolean isSignatureAuthentic = encryptionService.verifyOtherSignature(signedEncryptedMessageObject.getSignature(), decryptedMessage);
-        logger.info("Decrypted message: {}. Is signature authentic? {}", decryptedMessage, isSignatureAuthentic);
+
+        if (!isSignatureAuthentic) {
+            logger.info("Received an encrypted message with an invalid signature!");
+            return;
+        }
+
+        logger.info("Received an encrypted message. The signature is authentic");
         inputEmitter.notifyInputListeners(decryptedMessage);
     }
 }

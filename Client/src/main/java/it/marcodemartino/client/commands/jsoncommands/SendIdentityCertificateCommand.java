@@ -1,4 +1,4 @@
-package it.marcodemartino.client.commands;
+package it.marcodemartino.client.commands.jsoncommands;
 
 import it.marcodemartino.client.services.CertificateService;
 import it.marcodemartino.common.certificates.IdentityCertificate;
@@ -24,8 +24,12 @@ public class SendIdentityCertificateCommand extends JsonCommand<SendIdentityCert
     protected void execute(SendIdentityCertificateObject sendIdentityCertificateObject) {
         IdentityCertificate identityCertificate = sendIdentityCertificateObject.getIdentityCertificate();
         boolean isSignatureAuthentic = encryptionService.verifyIdentityCertificate(identityCertificate, false);
-        logger.info("Received a certificate for the email: {}. Is it authentic? {}", identityCertificate.getUser().getEmail(), isSignatureAuthentic);
-        // TODO save certificate to file and load on startup
-        certificateService.writeCertificate(identityCertificate);
+        logger.info("Received a certificate for the email: {}", identityCertificate.getUser().getEmail());
+        if (isSignatureAuthentic) {
+            logger.info("The certificate is authentic. Saving it to file...");
+            certificateService.writeCertificate(identityCertificate);
+        } else {
+            logger.warn("The certificate is not authentic!");
+        }
     }
 }

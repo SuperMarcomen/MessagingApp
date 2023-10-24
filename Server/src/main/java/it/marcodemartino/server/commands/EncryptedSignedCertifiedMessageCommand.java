@@ -22,7 +22,8 @@ public class EncryptedSignedCertifiedMessageCommand extends JsonCommand<SignedEn
         logger.info("Received an encrypted message for {}", signedEncryptedCertifiedObject.getSendTo());
         OutputEmitter out = messagingService.getClient(signedEncryptedCertifiedObject.getSendTo());
         if (out == null) {
-            logger.info("The client is not online!");
+            logger.info("The client is not online, storing the message");
+            messagingService.storeMessage(signedEncryptedCertifiedObject);
             return;
         }
         out.sendOutput(signedEncryptedCertifiedObject);

@@ -6,6 +6,7 @@ import it.marcodemartino.common.io.EventManager;
 import it.marcodemartino.common.io.listeners.InputListener;
 import it.marcodemartino.common.json.GsonInstance;
 import it.marcodemartino.common.json.JSONObject;
+import it.marcodemartino.server.services.MessagingService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,12 +18,14 @@ public class ClientHandlerIO implements ApplicationIO {
     private final BufferedReader in;
     private final PrintWriter out;
     private final EventManager eventManager;
+    private final MessagingService messagingService;
     private final Gson gson;
     private boolean running;
 
-    public ClientHandlerIO(InputStream inputStream, OutputStream outputStream) {
+    public ClientHandlerIO(InputStream inputStream, OutputStream outputStream, MessagingService messagingService) {
         this.in = new BufferedReader(new InputStreamReader(inputStream));
         this.out = new PrintWriter(outputStream, true);
+        this.messagingService = messagingService;
         eventManager = new EventManager();
         gson = GsonInstance.get();
         running = true;
@@ -31,7 +34,7 @@ public class ClientHandlerIO implements ApplicationIO {
     @Override
     public void sendOutput(JSONObject object) {
         String output = gson.toJson(object);
-        logger.info("Sending this message to the server: {}", output);
+        logger.info("Sending this message to the server: {}", object.getMethod());
         out.println(output);
     }
 
@@ -48,6 +51,7 @@ public class ClientHandlerIO implements ApplicationIO {
 
     @Override
     public void stop() {
+        messagingService.disconnectClient(this);
         running = false;
         tryClose();
         out.close();

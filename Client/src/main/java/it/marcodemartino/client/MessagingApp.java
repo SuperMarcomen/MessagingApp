@@ -9,6 +9,7 @@ import it.marcodemartino.client.services.CertificateService;
 import it.marcodemartino.client.services.RequestsKeysService;
 import it.marcodemartino.client.socket.SSLSocketClient;
 import it.marcodemartino.common.application.Application;
+import it.marcodemartino.common.certificates.IdentityCertificate;
 import it.marcodemartino.common.commands.JsonCommandManager;
 import it.marcodemartino.common.commands.UserCommandManager;
 import it.marcodemartino.common.encryption.AsymmetricEncryption;
@@ -59,7 +60,8 @@ public class MessagingApp {
         thread.start();
         application.getIO().sendOutput(new RequestPublicKeyObject());
         if (certificateService.doesCertificateExist()) {
-            application.getIO().sendOutput(new SendIdentityCertificateObject(certificateService.getIdentityCertificate()));
+            IdentityCertificate identityCertificate = certificateService.getIdentityCertificate();
+            application.getIO().sendOutput(new SendIdentityCertificateObject(identityCertificate, encryptionService.signIdentityCertificate(identityCertificate)));
         }
         inputEmitter.start();
 

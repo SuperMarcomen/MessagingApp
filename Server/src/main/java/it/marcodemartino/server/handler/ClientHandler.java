@@ -19,7 +19,7 @@ public class ClientHandler implements Application {
 
     public ClientHandler(Socket socket, EncryptionService encryptionService, RegistrationService registrationService, CertificatesService certificatesService, MessagingService messagingService) throws IOException {
         this.socket = socket;
-        this.applicationIO = new ClientHandlerIO(socket.getInputStream(), socket.getOutputStream());
+        this.applicationIO = new ClientHandlerIO(socket.getInputStream(), socket.getOutputStream(), messagingService);
 
         AsymmetricEncryption asymmetricEncryption = encryptionService.getLocalAsymmetricEncryption();
         JsonCommandManager commandManager = new JsonCommandManager();

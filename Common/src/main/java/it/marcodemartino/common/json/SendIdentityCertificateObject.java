@@ -6,9 +6,11 @@ public class SendIdentityCertificateObject implements JSONObject {
 
     private final JSONMethods method = JSONMethods.IDENTITY_CERTIFICATE;
     private final IdentityCertificate identityCertificate;
+    private final byte[][] signature;
 
-    public SendIdentityCertificateObject(IdentityCertificate identityCertificate) {
+    public SendIdentityCertificateObject(IdentityCertificate identityCertificate, byte[][] signature) {
         this.identityCertificate = identityCertificate;
+        this.signature = signature;
     }
 
     @Override
@@ -18,5 +20,9 @@ public class SendIdentityCertificateObject implements JSONObject {
 
     public IdentityCertificate getIdentityCertificate() {
         return identityCertificate;
+    }
+
+    public byte[][] getSignature() {
+        return signature;
     }
 }

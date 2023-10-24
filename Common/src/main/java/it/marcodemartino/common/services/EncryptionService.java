@@ -30,6 +30,11 @@ public class EncryptionService {
         gson = GsonInstance.get();
     }
 
+    public byte[][] signIdentityCertificate(IdentityCertificate identityCertificate) {
+        String json = gson.toJson(identityCertificate);
+        return localAsymmetricEncryption.signFromString(json);
+    }
+
     public void encryptSignAndCertifyMessage(JSONObject jsonObject, String email, IdentityCertificate identityCertificate, CompletableFuture<JSONObject> jsonFuture) {
         CompletableFuture<String> keyFuture = new CompletableFuture<>();
         keyFuture.thenAccept(publicKeyString -> {
@@ -46,7 +51,7 @@ public class EncryptionService {
             byte[][] encryptedJson = otherAsymmetricEncryption.encryptFromString(json);
             byte[][] signedJson = localAsymmetricEncryption.signFromString(json);
 
-            setOtherPublicKey(currentPubKey);
+            if (currentPubKey != null) setOtherPublicKey(currentPubKey);
             jsonFuture.complete(new SignedEncryptedCertifiedObject(encryptedJson, signedJson, email, identityCertificate));
         });
 
@@ -62,13 +67,6 @@ public class EncryptionService {
     }
 
     public JSONObject encryptMessage(JSONObject jsonObject) {
-        String json = gson.toJson(jsonObject);
-        byte[][] encryptedJson = otherAsymmetricEncryption.encryptFromString(json);
-        return new EncryptedMessageObject(encryptedJson);
-    }
-
-    public JSONObject encryptMessage(JSONObject jsonObject, PublicKey otherPublicKey) {
-        setOtherPublicKey(otherPublicKey);
         String json = gson.toJson(jsonObject);
         byte[][] encryptedJson = otherAsymmetricEncryption.encryptFromString(json);
         return new EncryptedMessageObject(encryptedJson);
@@ -91,7 +89,7 @@ public class EncryptionService {
         PublicKey currentPubKey = otherAsymmetricEncryption.getPublicKey();
         setOtherPublicKey(otherPubKey);
         boolean result = verifyOtherSignature(toBeChecked, shouldBe);
-        setOtherPublicKey(currentPubKey);
+        if (currentPubKey != null) setOtherPublicKey(currentPubKey);
         return result;
     }
 

@@ -9,6 +9,9 @@ import it.marcodemartino.common.email.EmailProvider;
 import it.marcodemartino.common.email.GmailProvider;
 import it.marcodemartino.common.encryption.*;
 import it.marcodemartino.common.services.*;
+import it.marcodemartino.server.dao.IMessagesDao;
+import it.marcodemartino.server.dao.MessagesDao;
+import it.marcodemartino.server.database.MessagesDatabase;
 import it.marcodemartino.server.handler.ClientHandler;
 import it.marcodemartino.server.services.*;
 import org.apache.logging.log4j.LogManager;
@@ -59,9 +62,9 @@ public class SSLServer implements Server {
         enableSSLProtocols(serverSocket);
         logger.info("Started the SSL socket server on the IP: {}", serverSocket.getInetAddress());
 
-        Database database = new UserDatabase();
-        database.initDatabase();
-        IUserDao userDao = new UserDao(database);
+        Database userDatabase = new UserDatabase();
+        userDatabase.initDatabase();
+        IUserDao userDao = new UserDao(userDatabase);
 
         AsymmetricEncryption localEncryption = new RSAEncryption(2048);
         AsymmetricEncryption otherEncryption = new RSAEncryption(2048);
@@ -75,7 +78,11 @@ public class SSLServer implements Server {
         EncryptionService encryptionService = new EncryptionService(localEncryption, otherEncryption, keysService);
         encryptionService.loadKeysIfExist();
 
-        MessagingService messagingService = new MessagingService();
+        Database messagesDatabase = new MessagesDatabase();
+        messagesDatabase.initDatabase();
+        IMessagesDao messagesDao = new MessagesDao(messagesDatabase);
+
+        MessagingService messagingService = new MessagingService(messagesDao);
 
         while (running) {
             if (serverSocket.isClosed()) return;

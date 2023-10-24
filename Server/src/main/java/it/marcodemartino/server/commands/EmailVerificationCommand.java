@@ -56,7 +56,7 @@ public class EmailVerificationCommand extends JsonCommand<EmailVerificationObjec
 
             IdentityCertificate identityCertificate = certificatesService.generateCertificate(user);
             messagingService.addClient(email, outputEmitter);
-            JSONObject jsonObject = new SendIdentityCertificateObject(identityCertificate);
+            JSONObject jsonObject = new SendIdentityCertificateObject(identityCertificate, encryptionService.signIdentityCertificate(identityCertificate));
             outputEmitter.sendOutput(encryptionService.encryptAndSignMessage(jsonObject, publicKey));
         } else {
             registrationResult = RegistrationResult.WRONG_CODE;
